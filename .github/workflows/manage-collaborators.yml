@@ -1,0 +1,25 @@
+name: Manage Repository Collaborators
+
+on:
+  # Run on schedule (once a day)
+  schedule:
+    - cron: '0 0 * * *'
+  # Allow manual trigger
+  workflow_dispatch:
+  # Run when collaborator file is updated
+  push:
+    paths:
+      - '.github/collaborators.yml'
+
+jobs:
+  sync-collaborators:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Manage Collaborators
+        uses: ./
+        with:
+          filename: '.github/collaborators.yml'
+          token: ${{ secrets.REPO_ADMIN_TOKEN }}

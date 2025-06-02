@@ -1,0 +1,24 @@
+- team: Rebels
+  role: admin
+  members:
+    - username: hansolo
+      name: Han Solo
+      email: hansolo@rebels.org
+      title: Captain of the Millennium Falcon
+      location: Outer Rim Territories
+      timezone: CET/CEST
+    - username: leiaorgana
+      name: Leia Organa
+      email: leiaorgana@rebels.org
+      title: Princess of Alderaan
+      location: Alderaan
+      timezone: CET/CEST
+- team: Empire
+  role: member
+  members:
+    - username: darthvader
+      name: Darth Vader
+      email: darthvader@empire.org
+      title: Sith Lord
+      location: Death Star
+      timezone: CET/CEST

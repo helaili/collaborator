@@ -1,24 +1,22 @@
-name: The name of your action here
-description: Provide a description here
-author: Your name or organization here
+name: collaborator
+description: Repository collaborator management as code
+author: helaili
 
 # Add your action's branding here. This will appear on the GitHub Marketplace.
 branding:
-  icon: heart
+  icon: user-plus
   color: red
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: Your input description here
+  filename:
+    description: The path to the YAML file containing collaborator definitions
+    required: false
+    default: '.github/collaborators.yml'
+  token:
+    description: GitHub token with repo administration permissions
     required: true
-    default: '1000'
-
-# Define your outputs here.
-outputs:
-  time:
-    description: Your output description here
 
 runs:
-  using: node20
+  using: node22
   main: dist/index.js
