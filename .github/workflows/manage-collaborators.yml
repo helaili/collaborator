@@ -11,6 +11,9 @@ on:
     paths:
       - '.github/collaborators.yml'
 
+permissions:
+  contents: read
+
 jobs:
   sync-collaborators:
     runs-on: ubuntu-latest
