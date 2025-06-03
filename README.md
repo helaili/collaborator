@@ -36,16 +36,6 @@
 For more information about the GitHub Actions toolkit, see the
 [documentation](https://github.com/actions/toolkit/blob/master/README.md).
 
-So, what are you waiting for? Go ahead and start customizing your action!
-
-1. Create a new branch
-
-   ```bash
-   git checkout -b releases/v1
-   ```
-
-1. Replace the contents of `src/` with your action code
-1. Add tests to `__tests__/` for your source code
 1. Format, test, and build the action
 
    ```bash
