@@ -59,7 +59,7 @@ jobs:
         with:
           filename: '.github/collaborators.yml'
           token: ${{ secrets.REPO_ADMIN_TOKEN }}
-        
+
       - name: Print Output
         id: output
         run: echo "${{ steps.test-action.outputs.time }}"
