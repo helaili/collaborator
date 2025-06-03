@@ -97,7 +97,6 @@ For information about versioning your action, see
 [Versioning](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md)
 in the GitHub Actions toolkit.
 
-
 ## Publishing a New Release
 
 This project includes a helper script, [`script/release`](./script/release)
