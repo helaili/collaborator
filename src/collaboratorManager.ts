@@ -176,7 +176,9 @@ export class CollaboratorManager {
     // Check if we need to update the role
     if (pendingInvite.permissions !== role) {
       // Delete the invite and send a new one
-      core.info(`Updating invitation for ${collaborator.username}`)
+      core.info(
+        `Updating invitation for ${collaborator.username}. Role changed from '${pendingInvite.permissions}' to '${role}'`
+      )
       await this.octokit.rest.repos.deleteInvitation({
         owner,
         repo,
