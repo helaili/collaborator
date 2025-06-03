@@ -1,10 +1,10 @@
 {
   "name": "typescript-action",
   "description": "GitHub Actions TypeScript template",
-  "version": "0.0.0",
-  "author": "",
+  "version": "v1.0.0",
+  "author": "Alain Hélaïli <helaili@github.com>",
   "type": "module",
-  "private": true,
+  "private": false,
   "homepage": "https://github.com/actions/typescript-action",
   "repository": {
     "type": "git",
