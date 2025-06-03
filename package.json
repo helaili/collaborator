@@ -1,17 +1,17 @@
 {
-  "name": "typescript-action",
-  "description": "GitHub Actions TypeScript template",
+  "name": "collaborator",
+  "description": "Manage repository collaborators as code with GitHub Actions",
   "version": "v1.0.0",
   "author": "Alain Hélaïli <helaili@github.com>",
   "type": "module",
   "private": false,
-  "homepage": "https://github.com/actions/typescript-action",
+  "homepage": "https://github.com/helaili/collaborator#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/helaili/collaborator.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/typescript-action/issues"
+    "url": "https://github.com/helaili/collaborator/issues"
   },
   "keywords": [
     "actions"
