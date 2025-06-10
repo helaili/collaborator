@@ -41750,9 +41750,11 @@ async function parseCollaboratorsFile(filePath) {
 class CollaboratorManager {
     octokit;
     repoInfo;
-    constructor(octokit, repoInfo) {
+    affiliation;
+    constructor(octokit, repoInfo, affiliation) {
         this.octokit = octokit;
         this.repoInfo = repoInfo;
+        this.affiliation = affiliation;
     }
     /**
      * Synchronize repository collaborators with the desired list
@@ -41770,11 +41772,16 @@ class CollaboratorManager {
     async getCurrentState() {
         const { owner, repo } = this.repoInfo;
         // Get current collaborators
-        const { data: currentCollaborators } = await this.octokit.rest.repos.listCollaborators({
+        // Get all current collaborators, handling pagination
+        const currentCollaborators = [];
+        for await (const response of this.octokit.paginate.iterator(this.octokit.rest.repos.listCollaborators, {
             owner,
             repo,
-            affiliation: 'all'
-        });
+            affiliation: this.affiliation,
+            per_page: 100
+        })) {
+            currentCollaborators.push(...response.data);
+        }
         coreExports.info(`Found ${currentCollaborators.length} current collaborators in repository`);
         // Get pending invites
         const { data: pendingInvites } = await this.octokit.rest.repos.listInvitations({
@@ -41816,7 +41823,7 @@ class CollaboratorManager {
                 owner,
                 repo,
                 username: collaborator.username,
-                role
+                permission: role
             });
         }
     }
@@ -41832,7 +41839,7 @@ class CollaboratorManager {
                 owner,
                 repo,
                 username: collaborator.username,
-                role
+                permission: role
             });
         }
         else {
@@ -41857,7 +41864,7 @@ class CollaboratorManager {
                 owner,
                 repo,
                 username: collaborator.username,
-                role
+                permission: role
             });
         }
         else {
@@ -41914,12 +41921,12 @@ class CollaboratorManager {
 async function run() {
     try {
         // Get inputs and initialize dependencies
-        const { filename, octokit, repoInfo } = getInputsAndDependencies();
+        const { filename, affiliation, octokit, repoInfo } = getInputsAndDependencies();
         // Validate and load collaborators file
         const filePath = resolveFilePath(filename);
         const desiredCollaborators = await loadCollaboratorsFile(filePath);
         // Create collaborator manager and sync collaborators
-        const manager = new CollaboratorManager(octokit, repoInfo);
+        const manager = new CollaboratorManager(octokit, repoInfo, affiliation);
         await manager.syncCollaborators(desiredCollaborators);
         coreExports.info('Repository collaborators have been successfully synchronized');
     }
@@ -41935,6 +41942,15 @@ async function run() {
 function getInputsAndDependencies() {
     const filename = coreExports.getInput('filename');
     const token = coreExports.getInput('token');
+    let affiliation;
+    // Validate inputs
+    // Affiliation must be one of 'outside', 'direct', or 'all'
+    if (!['outside', 'direct', 'all'].includes(coreExports.getInput('affiliation'))) {
+        throw new Error(`Invalid affiliation: ${coreExports.getInput('affiliation')}. Must be one of 'outside', 'direct', or 'all'.`);
+    }
+    else {
+        affiliation = coreExports.getInput('affiliation');
+    }
     // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
     coreExports.debug(`Input filename: ${filename}`);
     // Initialize octokit
@@ -41942,7 +41958,7 @@ function getInputsAndDependencies() {
     const context = githubExports.context;
     const repoInfo = context.repo;
     coreExports.info(`Repository: ${repoInfo.owner}/${repoInfo.repo}`);
-    return { filename, octokit, repoInfo };
+    return { filename, affiliation, octokit, repoInfo };
 }
 /**
  * Resolve the file path for the collaborators file
