@@ -14,7 +14,8 @@ inputs:
     required: false
     default: '.github/collaborators.yml'
   affiliation:
-    description: The affiliation of the collaborators (e.g., direct, outside, all)
+    description:
+      The affiliation of the collaborators (e.g., direct, outside, all)
     required: false
     default: 'all'
   token:
