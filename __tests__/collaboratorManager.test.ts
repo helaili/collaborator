@@ -3,6 +3,7 @@
  */
 import { jest } from '@jest/globals'
 import * as core from '../__fixtures__/core.js'
+import { permission } from 'process'
 
 // Mocks should be declared before the module being tested is imported.
 jest.unstable_mockModule('@actions/core', () => core)
@@ -36,10 +37,28 @@ describe('CollaboratorManager', () => {
           removeCollaborator: jest.fn(),
           deleteInvitation: jest.fn()
         }
+      },
+      paginate: {
+        iterator: jest.fn((method, params) => {
+          // Simulate a single page with the result of listCollaborators
+          // The test will set mockOctokit.rest.repos.listCollaborators.mockResolvedValue({ data: [...] })
+          // so we use that value here
+          const dataPromise = mockOctokit.rest.repos.listCollaborators(params)
+          return {
+            async *[Symbol.asyncIterator]() {
+              const result = await dataPromise
+              yield { data: result.data }
+            }
+          }
+        })
       }
     }
 
-    collaboratorManager = new CollaboratorManager(mockOctokit, mockRepoInfo)
+    collaboratorManager = new CollaboratorManager(
+      mockOctokit,
+      mockRepoInfo,
+      'all'
+    )
   })
 
   afterEach(() => {
@@ -66,13 +85,13 @@ describe('CollaboratorManager', () => {
         owner: 'testowner',
         repo: 'testrepo',
         username: 'newuser',
-        role: 'push'
+        permission: 'push'
       })
       expect(mockOctokit.rest.repos.addCollaborator).toHaveBeenCalledWith({
         owner: 'testowner',
         repo: 'testrepo',
         username: 'anotheruser',
-        role: 'admin'
+        permission: 'admin'
       })
     })
 
@@ -127,7 +146,7 @@ describe('CollaboratorManager', () => {
         owner: 'testowner',
         repo: 'testrepo',
         username: 'updateuser',
-        role: 'admin'
+        permission: 'admin'
       })
     })
 
@@ -235,7 +254,7 @@ describe('CollaboratorManager', () => {
         owner: 'testowner',
         repo: 'testrepo',
         username: 'newuser',
-        role: 'pull'
+        permission: 'pull'
       })
 
       // Should update existing user
@@ -243,7 +262,7 @@ describe('CollaboratorManager', () => {
         owner: 'testowner',
         repo: 'testrepo',
         username: 'updateuser',
-        role: 'admin'
+        permission: 'admin'
       })
 
       // Should remove unwanted collaborator
@@ -288,7 +307,7 @@ describe('CollaboratorManager', () => {
         owner: 'testowner',
         repo: 'testrepo',
         username: 'pendinguser',
-        role: 'admin'
+        permission: 'admin'
       })
     })
 
@@ -336,7 +355,7 @@ describe('CollaboratorManager', () => {
         owner: 'testowner',
         repo: 'testrepo',
         username: 'newuser',
-        role: 'push'
+        permission: 'push'
       })
     })
   })

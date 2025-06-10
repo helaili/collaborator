@@ -15,13 +15,16 @@ import { getOctokit } from '@actions/github'
 export class CollaboratorManager {
   private octokit: ReturnType<typeof getOctokit>
   private repoInfo: RepositoryInfo
+  private affiliation: 'outside' | 'direct' | 'all'
 
   constructor(
     octokit: ReturnType<typeof getOctokit>,
-    repoInfo: RepositoryInfo
+    repoInfo: RepositoryInfo,
+    affiliation: 'outside' | 'direct' | 'all'
   ) {
     this.octokit = octokit
     this.repoInfo = repoInfo
+    this.affiliation = affiliation
   }
 
   /**
@@ -55,12 +58,19 @@ export class CollaboratorManager {
     const { owner, repo } = this.repoInfo
 
     // Get current collaborators
-    const { data: currentCollaborators } =
-      await this.octokit.rest.repos.listCollaborators({
+    // Get all current collaborators, handling pagination
+    const currentCollaborators: RepoCollaboratorList = []
+    for await (const response of this.octokit.paginate.iterator(
+      this.octokit.rest.repos.listCollaborators,
+      {
         owner,
         repo,
-        affiliation: 'all'
-      })
+        affiliation: this.affiliation,
+        per_page: 100
+      }
+    )) {
+      currentCollaborators.push(...response.data)
+    }
     core.info(
       `Found ${currentCollaborators.length} current collaborators in repository`
     )
@@ -130,7 +140,7 @@ export class CollaboratorManager {
         owner,
         repo,
         username: collaborator.username,
-        role
+        permission: role
       })
     }
   }
@@ -154,7 +164,7 @@ export class CollaboratorManager {
         owner,
         repo,
         username: collaborator.username,
-        role
+        permission: role
       })
     } else {
       core.info(
@@ -189,7 +199,7 @@ export class CollaboratorManager {
         owner,
         repo,
         username: collaborator.username,
-        role
+        permission: role
       })
     } else {
       core.info(`Invitation already pending for ${collaborator.username}`)

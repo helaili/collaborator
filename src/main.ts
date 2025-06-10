@@ -13,14 +13,15 @@ import { CollaboratorManager } from './collaboratorManager.js'
 export async function run(): Promise<void> {
   try {
     // Get inputs and initialize dependencies
-    const { filename, octokit, repoInfo } = getInputsAndDependencies()
+    const { filename, affiliation, octokit, repoInfo } =
+      getInputsAndDependencies()
 
     // Validate and load collaborators file
     const filePath = resolveFilePath(filename)
     const desiredCollaborators = await loadCollaboratorsFile(filePath)
 
     // Create collaborator manager and sync collaborators
-    const manager = new CollaboratorManager(octokit, repoInfo)
+    const manager = new CollaboratorManager(octokit, repoInfo, affiliation)
     await manager.syncCollaborators(desiredCollaborators)
 
     core.info('Repository collaborators have been successfully synchronized')
@@ -36,6 +37,17 @@ export async function run(): Promise<void> {
 function getInputsAndDependencies() {
   const filename: string = core.getInput('filename')
   const token: string = core.getInput('token')
+  let affiliation: 'outside' | 'direct' | 'all'
+
+  // Validate inputs
+  // Affiliation must be one of 'outside', 'direct', or 'all'
+  if (!['outside', 'direct', 'all'].includes(core.getInput('affiliation'))) {
+    throw new Error(
+      `Invalid affiliation: ${core.getInput('affiliation')}. Must be one of 'outside', 'direct', or 'all'.`
+    )
+  } else {
+    affiliation = core.getInput('affiliation') as 'outside' | 'direct' | 'all'
+  }
 
   // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
   core.debug(`Input filename: ${filename}`)
@@ -47,7 +59,7 @@ function getInputsAndDependencies() {
 
   core.info(`Repository: ${repoInfo.owner}/${repoInfo.repo}`)
 
-  return { filename, octokit, repoInfo }
+  return { filename, affiliation, octokit, repoInfo }
 }
 
 /**
