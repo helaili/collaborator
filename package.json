@@ -1,7 +1,7 @@
 {
   "name": "collaborator",
   "description": "Manage repository collaborators as code with GitHub Actions",
-  "version": "v1.1.1",
+  "version": "v1.1.2",
   "author": "Alain Hélaïli <helaili@github.com>",
   "type": "module",
   "private": false,

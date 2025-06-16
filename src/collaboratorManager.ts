@@ -125,11 +125,17 @@ export class CollaboratorManager {
       )
 
       if (existingCollaborator) {
-        await this.handleExistingCollaborator(
-          existingCollaborator,
-          collaborator,
-          role
-        )
+        try {
+          await this.handleExistingCollaborator(
+            existingCollaborator,
+            collaborator,
+            role
+          )
+        } catch (error) {
+          core.error(
+            `Failed to update existing collaborator ${collaborator.username}: ${error}`
+          )
+        }
         continue
       }
 
@@ -140,7 +146,13 @@ export class CollaboratorManager {
       )
 
       if (pendingInvite) {
-        await this.handlePendingInvite(pendingInvite, collaborator, role)
+        try {
+          await this.handlePendingInvite(pendingInvite, collaborator, role)
+        } catch (error) {
+          core.error(
+            `Failed to update pending invite for ${collaborator.username}: ${error}`
+          )
+        }
         continue
       }
 
@@ -148,12 +160,18 @@ export class CollaboratorManager {
       core.info(
         `Adding collaborator ${collaborator.username} with ${role} role`
       )
-      await this.octokit.rest.repos.addCollaborator({
-        owner,
-        repo,
-        username: collaborator.username,
-        permission: role
-      })
+      try {
+        await this.octokit.rest.repos.addCollaborator({
+          owner,
+          repo,
+          username: collaborator.username,
+          permission: role
+        })
+      } catch (error) {
+        core.error(
+          `Failed to add collaborator ${collaborator.username}: ${error}`
+        )
+      }
     }
   }
 
@@ -172,12 +190,18 @@ export class CollaboratorManager {
       core.info(
         `Updating role for ${collaborator.username} from ${currentRole} to ${role}`
       )
-      await this.octokit.rest.repos.addCollaborator({
-        owner,
-        repo,
-        username: collaborator.username,
-        permission: role
-      })
+      try {
+        await this.octokit.rest.repos.addCollaborator({
+          owner,
+          repo,
+          username: collaborator.username,
+          permission: role
+        })
+      } catch (error) {
+        core.error(
+          `Failed to update collaborator ${collaborator.username}: ${error}`
+        )
+      }
     } else {
       core.info(
         `Collaborator ${collaborator.username} already exists with correct role`
@@ -201,18 +225,30 @@ export class CollaboratorManager {
       core.info(
         `Updating invitation for ${collaborator.username}. Role changed from '${pendingInvite.permissions}' to '${role}'`
       )
-      await this.octokit.rest.repos.deleteInvitation({
-        owner,
-        repo,
-        invitation_id: pendingInvite.id
-      })
+      try {
+        await this.octokit.rest.repos.deleteInvitation({
+          owner,
+          repo,
+          invitation_id: pendingInvite.id
+        })
+      } catch (error) {
+        core.error(
+          `Failed to delete invitation for ${collaborator.username}: ${error}`
+        )
+      }
 
-      await this.octokit.rest.repos.addCollaborator({
-        owner,
-        repo,
-        username: collaborator.username,
-        permission: role
-      })
+      try {
+        await this.octokit.rest.repos.addCollaborator({
+          owner,
+          repo,
+          username: collaborator.username,
+          permission: role
+        })
+      } catch (error) {
+        core.error(
+          `Failed to add collaborator ${collaborator.username} after deleting invite: ${error}`
+        )
+      }
     } else {
       core.info(`Invitation already pending for ${collaborator.username}`)
     }
@@ -236,11 +272,17 @@ export class CollaboratorManager {
       }
 
       core.info(`Removing collaborator ${collaborator.login}`)
-      await this.octokit.rest.repos.removeCollaborator({
-        owner,
-        repo,
-        username: collaborator.login
-      })
+      try {
+        await this.octokit.rest.repos.removeCollaborator({
+          owner,
+          repo,
+          username: collaborator.login
+        })
+      } catch (error) {
+        core.error(
+          `Failed to remove collaborator ${collaborator.login}: ${error}`
+        )
+      }
     }
   }
 
@@ -264,11 +306,17 @@ export class CollaboratorManager {
       }
 
       core.info(`Removing invitation for ${invite.invitee.login}`)
-      await this.octokit.rest.repos.deleteInvitation({
-        owner,
-        repo,
-        invitation_id: invite.id
-      })
+      try {
+        await this.octokit.rest.repos.deleteInvitation({
+          owner,
+          repo,
+          invitation_id: invite.id
+        })
+      } catch (error) {
+        core.error(
+          `Failed to remove invitation for ${invite.invitee.login}: ${error}`
+        )
+      }
     }
   }
 }
