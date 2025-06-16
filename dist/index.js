@@ -41795,7 +41795,14 @@ class CollaboratorManager {
      * Extract lowercase usernames from collaborators list
      */
     getDesiredUsernames(collaborators) {
-        return collaborators.map((c) => c.username.toLowerCase());
+        return collaborators.map((c) => {
+            if (!c.username) {
+                throw new Error(`Collaborator entry is missing username: ${JSON.stringify(c)}`);
+            }
+            else {
+                return c.username.toLowerCase();
+            }
+        });
     }
     /**
      * Process collaborators that need to be added or have roles updated
