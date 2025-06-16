@@ -41799,6 +41799,9 @@ class CollaboratorManager {
             if (!c.username) {
                 throw new Error(`Collaborator entry is missing username: ${JSON.stringify(c)}`);
             }
+            else if (!(typeof c.username === 'string')) {
+                throw new Error(`Collaborator username must be a string, got: ${JSON.stringify(c)}`);
+            }
             else {
                 return c.username.toLowerCase();
             }
