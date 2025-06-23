@@ -310,6 +310,54 @@ describe('CollaboratorManager', () => {
       })
     })
 
+    it('should refresh expired invitations', async () => {
+      const desiredCollaborators = [
+        new CollaboratorObject('expireduser', 'push')
+      ]
+
+      // Save the original method
+      const originalIsInvitationExpired =
+        collaboratorManager['isInvitationExpired']
+
+      // Mock the internal method to always return true for expired invitations
+      // @ts-expect-error: using private method for testing
+      collaboratorManager['isInvitationExpired'] = jest
+        .fn()
+        .mockReturnValue(true)
+
+      mockOctokit.rest.repos.listCollaborators.mockResolvedValue({ data: [] })
+      mockOctokit.rest.repos.listInvitations.mockResolvedValue({
+        data: [
+          {
+            id: 456,
+            invitee: { login: 'expireduser' },
+            permissions: 'push',
+            created_at: '2025-06-16T00:00:00Z' // Date doesn't matter since we're mocking
+          }
+        ]
+      })
+
+      await collaboratorManager.syncCollaborators(desiredCollaborators)
+
+      // Should delete the expired invitation
+      expect(mockOctokit.rest.repos.deleteInvitation).toHaveBeenCalledWith({
+        owner: 'testowner',
+        repo: 'testrepo',
+        invitation_id: 456
+      })
+
+      // Should send a new invitation with the same role
+      expect(mockOctokit.rest.repos.addCollaborator).toHaveBeenCalledWith({
+        owner: 'testowner',
+        repo: 'testrepo',
+        username: 'expireduser',
+        permission: 'push'
+      })
+
+      // Restore the original method
+      collaboratorManager['isInvitationExpired'] = originalIsInvitationExpired
+    })
+
     it('should remove pending invitations not in desired list', async () => {
       const desiredCollaborators = [new CollaboratorObject('keepuser', 'push')]
 

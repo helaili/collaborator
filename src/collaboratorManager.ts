@@ -210,7 +210,7 @@ export class CollaboratorManager {
   }
 
   /**
-   * Handle pending invitation - update if roles changed
+   * Handle pending invitation - update if roles changed or resend if expired
    */
   private async handlePendingInvite(
     pendingInvite: RepoInvitation,
@@ -219,11 +219,18 @@ export class CollaboratorManager {
   ): Promise<void> {
     const { owner, repo } = this.repoInfo
 
-    // Check if we need to update the role
-    if (pendingInvite.permissions !== role) {
+    // Check if the invitation has expired
+    const isExpired = this.isInvitationExpired(pendingInvite)
+
+    // Check if we need to update the role or resend expired invitation
+    if (pendingInvite.permissions !== role || isExpired) {
+      const reasonMsg = isExpired
+        ? `invitation expired`
+        : `role changed from '${pendingInvite.permissions}' to '${role}'`
+
       // Delete the invite and send a new one
       core.info(
-        `Updating invitation for ${collaborator.username}. Role changed from '${pendingInvite.permissions}' to '${role}'`
+        `Updating invitation for ${collaborator.username}. Reason: ${reasonMsg}`
       )
       try {
         await this.octokit.rest.repos.deleteInvitation({
@@ -252,6 +259,15 @@ export class CollaboratorManager {
     } else {
       core.info(`Invitation already pending for ${collaborator.username}`)
     }
+  }
+
+  /**
+   * Check if a repository invitation has expired
+   * @param invitation The repository invitation to check
+   * @returns True if the invitation has expired, false otherwise
+   */
+  private isInvitationExpired(invitation: RepoInvitation): boolean {
+    return invitation.expired ? invitation.expired : false
   }
 
   /**
