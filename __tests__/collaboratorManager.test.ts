@@ -39,10 +39,16 @@ describe('CollaboratorManager', () => {
       },
       paginate: {
         iterator: jest.fn((method, params) => {
-          // Simulate a single page with the result of listCollaborators
-          // The test will set mockOctokit.rest.repos.listCollaborators.mockResolvedValue({ data: [...] })
-          // so we use that value here
-          const dataPromise = mockOctokit.rest.repos.listCollaborators(params)
+          // Handle both listCollaborators and listInvitations
+          let dataPromise
+          if (method === mockOctokit.rest.repos.listCollaborators) {
+            dataPromise = mockOctokit.rest.repos.listCollaborators(params)
+          } else if (method === mockOctokit.rest.repos.listInvitations) {
+            dataPromise = mockOctokit.rest.repos.listInvitations(params)
+          } else {
+            dataPromise = Promise.resolve({ data: [] })
+          }
+
           return {
             async *[Symbol.asyncIterator]() {
               const result = await dataPromise
