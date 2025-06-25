@@ -76,11 +76,18 @@ export class CollaboratorManager {
     )
 
     // Get pending invites
-    const { data: pendingInvites } =
-      await this.octokit.rest.repos.listInvitations({
+    // Get all pending invites, handling pagination
+    const pendingInvites: RepoInvitationList = []
+    for await (const response of this.octokit.paginate.iterator(
+      this.octokit.rest.repos.listInvitations,
+      {
         owner,
-        repo
-      })
+        repo,
+        per_page: 100
+      }
+    )) {
+      pendingInvites.push(...response.data)
+    }
     core.info(`Found ${pendingInvites.length} pending invitations`)
 
     return { currentCollaborators, pendingInvites }

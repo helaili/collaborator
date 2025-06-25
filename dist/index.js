@@ -41784,10 +41784,15 @@ class CollaboratorManager {
         }
         coreExports.info(`Found ${currentCollaborators.length} current collaborators in repository`);
         // Get pending invites
-        const { data: pendingInvites } = await this.octokit.rest.repos.listInvitations({
+        // Get all pending invites, handling pagination
+        const pendingInvites = [];
+        for await (const response of this.octokit.paginate.iterator(this.octokit.rest.repos.listInvitations, {
             owner,
-            repo
-        });
+            repo,
+            per_page: 100
+        })) {
+            pendingInvites.push(...response.data);
+        }
         coreExports.info(`Found ${pendingInvites.length} pending invitations`);
         return { currentCollaborators, pendingInvites };
     }
